@@ -1,2 +1,0 @@
-model : GPR
-learning_time(sec) : 0.031184911727905273

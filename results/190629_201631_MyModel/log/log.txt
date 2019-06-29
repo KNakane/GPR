@@ -1,2 +1,0 @@
-model : MyModel
-learning_time(sec) : 0.21058106422424316
