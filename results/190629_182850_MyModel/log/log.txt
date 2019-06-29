@@ -1,0 +1,2 @@
+model : MyModel
+learning_time(sec) : 0.0003020763397216797

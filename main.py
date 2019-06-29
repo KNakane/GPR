@@ -10,6 +10,6 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--r', choices=['Mymodel', 'GPR'])
+    parser.add_argument('--r', default='GPR', choices=['MyModel', 'GPR'])
     args = parser.parse_args()
     main(args)
