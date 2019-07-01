@@ -43,30 +43,36 @@ class GPR(Method):
 
 
 class MyModel(Method):
-    def __init__(self, kernel='RBF', beta=10.):
+    def __init__(self, kernel='Test', beta=100.):
         super().__init__()
-        self.params = np.array([1.,0.4,0.1])
+        #self.params = np.array([1., 2.5, 0.1])
+        self.params = np.array([1., 1.]) #np.array([1., 2.5, 0.1])
         self.beta = beta
         self.kernel = eval(kernel)(params=self.params)
 
-    def fit(self, x, y, learning_rate=0.1, iteration=1000):
+    def fit(self, x, y, learning_rate=0.1, iteration=10000):
         self.x = x
         self.t = y
         
         for _ in range(iteration):
+            params = self.kernel.get_params()
             self.gram = self.kernel.setting(*np.meshgrid(x, x))
             self.covariance = self.gram #+ np.identity(len(x)) / self.beta
             self.precision = np.linalg.inv(self.covariance)
             gradients = self.kernel.derivatives(*np.meshgrid(x, x))
+            
             updates = np.array(
-                [-np.trace(self.precision.dot(grad)) + y.dot(self.precision.dot(grad).dot(self.precision).dot(y)) for grad in gradients])
-            self.kernel.update(learning_rate * updates)        
+                [np.asscalar(-np.trace(self.precision @ grad) + (self.precision @ y).T @ grad @ (self.precision @ y)) for grad in gradients])
+            self.kernel.update(learning_rate * updates)
+            if np.allclose(params, self.kernel.get_params()):
+                break
+        
         return
 
     def predict(self, x, restore_dir=None):
         if restore_dir is not None:
             self.model = self.restore_model(restore_dir)
-        gram = self.kernel.setting(*np.meshgrid(x, self.x, indexing='ij'))
-        mean = gram.dot(self.precision @ self.t)
-        var = self.kernel.setting(x, x) + 1 / self.beta - np.sum(gram.dot(self.precision) * gram, axis=1)
-        return [mean, var**2]
+        gram = self.kernel.setting(*np.meshgrid(self.x, x, indexing='xy'))
+        mean = gram @ (self.precision @ self.t)
+        var = self.kernel.setting(x, x) + 1 / self.beta - np.diag(gram @ self.precision @ gram.T)
+        return mean, var
