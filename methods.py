@@ -53,7 +53,7 @@ class MyModel(Method):
         self.beta = beta
         self.kernel = eval(kernel)(params=self.params)
 
-    def fit(self, x, y, learning_rate=0.1, iteration=1000):
+    def fit(self, x, y, learning_rate=0.1, iteration=10000):
         self.x = x
         self.t = y
 

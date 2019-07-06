@@ -22,9 +22,10 @@ class Gaussian(object):
         assert np.shape(updates) == (2,)
         self.__params += updates
 
-class RBF(object):
+class Test(object):
+
     def __init__(self, params):
-        assert np.shape(params) == (3,)
+        assert np.shape(params) == (2,)
         self.params = params
 
     def __call__(self, x, y):
@@ -35,10 +36,9 @@ class RBF(object):
 
     def derivatives(self, x, y):
         sq_diff = (x - y) ** 2
-        delta_0 = 2 * np.exp(-0.5 * self.params[1] * sq_diff)
-        delta_1 = -0.5 * sq_diff * delta_0 * self.params[0]**2
-        delta_2 = (x == y)
-        return (delta_0, delta_1, delta_2)
+        delta_0 = np.exp(-0.5 * self.params[1] * sq_diff)
+        delta_1 = -0.5 * sq_diff * delta_0 * self.params[0]
+        return (delta_0, delta_1)
 
     def update(self, updates):
         assert np.shape(updates) == (3,)

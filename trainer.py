@@ -10,7 +10,7 @@ class Trainer():
         self.regression_model = eval(model)()
         self.util = Utility(model)
         self.util.initialize()
-        self.train_x, self.train_y = self.load(n=30, std=0.1)
+        self.train_x, self.train_y = self.load(low=0, high=1, n=40, std=0.1)
         self.message = OrderedDict({'model':model})
 
     def func(self, x):
