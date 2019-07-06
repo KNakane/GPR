@@ -43,30 +43,37 @@ class GPR(Method):
 
 
 class MyModel(Method):
-    def __init__(self, kernel='RBF', beta=10.):
+    def __init__(self, kernel='Gaussian', beta=10.):
         super().__init__()
-        self.params = np.array([1.,0.4,0.1])
+        
+        if kernel == 'RBF':
+            self.params = np.array([1.,0.4,0.1])
+        elif kernel == 'Gaussian':
+            self.params = np.array([1., 1.])
         self.beta = beta
         self.kernel = eval(kernel)(params=self.params)
 
     def fit(self, x, y, learning_rate=0.1, iteration=1000):
         self.x = x
         self.t = y
-        
-        for _ in range(iteration):
-            self.gram = self.kernel.setting(*np.meshgrid(x, x))
-            self.covariance = self.gram #+ np.identity(len(x)) / self.beta
+
+        for i in range(iteration):
+            params = self.kernel.get_params()
+            Gram = self.kernel(*np.meshgrid(x, x))
+            self.covariance = Gram + np.identity(len(x)) / self.beta
             self.precision = np.linalg.inv(self.covariance)
-            gradients = self.kernel.derivatives(*np.meshgrid(x, x))
+            gradients = self.kernel.derivatives(*np.meshgrid(x, x))    
             updates = np.array(
-                [-np.trace(self.precision.dot(grad)) + y.dot(self.precision.dot(grad).dot(self.precision).dot(y)) for grad in gradients])
-            self.kernel.update(learning_rate * updates)        
+                [-np.trace(self.precision.dot(grad)) + ((self.precision @ y).T @ grad @ (self.precision @ y))[0, 0] for grad in gradients])
+            self.kernel.update(learning_rate * updates)
+            if np.allclose(params, self.kernel.get_params()):
+                break
         return
 
     def predict(self, x, restore_dir=None):
         if restore_dir is not None:
             self.model = self.restore_model(restore_dir)
-        gram = self.kernel.setting(*np.meshgrid(x, self.x, indexing='ij'))
+        gram = self.kernel(*np.meshgrid(x, self.x, indexing='ij'))
         mean = gram.dot(self.precision @ self.t)
-        var = self.kernel.setting(x, x) + 1 / self.beta - np.sum(gram.dot(self.precision) * gram, axis=1)
+        var = self.kernel(x, x) + 1 / self.beta - np.sum(gram.dot(self.precision) * gram, axis=1)
         return [mean, var**2]
