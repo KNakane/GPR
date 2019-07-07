@@ -36,7 +36,7 @@ class Trainer():
         plt.plot(x_test[:,0], mean, color="red", label="predict_mean")
         plt.fill_between(x_test[:,0], mean[:,0] - std[:,0], mean[:,0] + std[:,0], color="pink", alpha=0.5, label="predict_std")
         plt.legend(loc="lower left")
-        plt.show()
+        plt.savefig(self.util.res_dir + '/train.png')
         return
 
     def test(self):
