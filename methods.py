@@ -41,6 +41,23 @@ class GPR(Method):
         mean, var = self.model.predict(x)
         return [mean, var]
 
+class SparseGPR(Method):
+    def __init__(self):
+        super().__init__()
+        self.kernel = GPy.kern.RBF(1)
+        self.model = GPy.models.SparseGPRegression
+
+    def fit(self, x, y):
+        self.model = self.model(x, y, kernel=self.kernel)
+        self.model.optimize()
+        return
+
+    def predict(self, x, restore_dir=None):
+        if restore_dir is not None:
+            self.model = self.restore_model(restore_dir)
+        mean, var = self.model.predict(x)
+        return [mean, var]
+
 
 class MyModel(Method):
     def __init__(self, kernel='Gaussian', beta=10.):
@@ -53,7 +70,7 @@ class MyModel(Method):
         self.beta = beta
         self.kernel = eval(kernel)(params=self.params)
 
-    def fit(self, x, y, learning_rate=0.1, iteration=10000):
+    def fit(self, x, y, learning_rate=0.1, iteration=100):
         self.x = x
         self.t = y
 

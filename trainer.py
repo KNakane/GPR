@@ -3,7 +3,7 @@ import numpy as np
 from utility import Utility
 import matplotlib.pyplot as plt
 from collections import OrderedDict
-from methods import GPR, MyModel
+from methods import GPR, SparseGPR, MyModel
 
 class Trainer():
     def __init__(self, model):
